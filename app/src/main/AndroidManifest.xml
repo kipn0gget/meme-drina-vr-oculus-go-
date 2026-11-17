@@ -23,10 +23,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SlendrinaGoVR">
 
-        <!-- Oculus Go / Gear VR dual-mode compatibility (runs in VR SBS or Oculus TV 2D) -->
+        <!-- Oculus Go VR-only stereoscopic mode -->
         <meta-data
             android:name="com.samsung.android.vr.application.mode"
-            android:value="vr_dual" />
+            android:value="vr_only" />
 
         <activity
             android:name=".MainActivity"

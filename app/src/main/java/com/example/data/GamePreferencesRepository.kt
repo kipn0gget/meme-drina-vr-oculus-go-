@@ -17,7 +17,6 @@ private val Context.gameDataStore: DataStore<Preferences> by preferencesDataStor
 class GamePreferencesRepository(private val context: Context) {
 
     private object Keys {
-        val RENDER_MODE = stringPreferencesKey("render_mode")
         val REFRESH_RATE = stringPreferencesKey("vr_refresh_rate")
         val HEAD_TRACKING = booleanPreferencesKey("head_tracking")
         val AUDIO_ENABLED = booleanPreferencesKey("audio_enabled")
@@ -31,9 +30,6 @@ class GamePreferencesRepository(private val context: Context) {
     }
 
     val settingsFlow: Flow<PlayerSettings> = context.gameDataStore.data.map { prefs ->
-        val renderMode = prefs[Keys.RENDER_MODE]
-            ?.let { name -> RenderMode.entries.firstOrNull { it.name == name } }
-            ?: RenderMode.VR_SBS
         val refreshRate = prefs[Keys.REFRESH_RATE]
             ?.let { name -> VrRefreshRate.entries.firstOrNull { it.name == name } }
             ?: VrRefreshRate.HZ_72
@@ -45,7 +41,6 @@ class GamePreferencesRepository(private val context: Context) {
             ?: Difficulty.MEDIUM
 
         PlayerSettings(
-            renderMode = renderMode,
             refreshRate = refreshRate,
             headTrackingEnabled = prefs[Keys.HEAD_TRACKING] ?: true,
             audioEnabled = prefs[Keys.AUDIO_ENABLED] ?: true,
@@ -66,10 +61,6 @@ class GamePreferencesRepository(private val context: Context) {
             byMap = mapRecords,
             totalEscapes = prefs[Keys.TOTAL_ESCAPES] ?: 0
         )
-    }
-
-    suspend fun setRenderMode(mode: RenderMode) {
-        context.gameDataStore.edit { it[Keys.RENDER_MODE] = mode.name }
     }
 
     suspend fun setRefreshRate(rate: VrRefreshRate) {

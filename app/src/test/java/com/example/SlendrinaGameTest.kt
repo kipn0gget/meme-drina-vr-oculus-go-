@@ -13,13 +13,14 @@ import com.example.game.GamePhase
 import com.example.game.MapBuilder
 import com.example.input.BluetoothGamepadHandler
 import com.example.input.MenuNavAction
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.example.data.GameRecords
 import com.example.data.PlayerSettings
-import com.example.data.RenderMode
+import com.example.ui.GamePlayScreen
 import com.example.ui.HeadPose
 import com.example.ui.MainMenuScreen
 import com.example.ui.theme.SlendrinaGoTheme
@@ -80,9 +81,7 @@ class SlendrinaGameTest {
     }
 
     @Test
-    fun menuPreviewsSelectedMapsInVrAndDefaultsToVrSbs() {
-        assertEquals(RenderMode.VR_SBS, PlayerSettings().renderMode)
-
+    fun menuPreviewsSelectedMapsInVr() {
         val engine = GameEngine()
         assertEquals(GamePhase.MENU, engine.phase)
         assertEquals(GameMap.HOUSE, engine.level.map)
@@ -397,5 +396,57 @@ class SlendrinaGameTest {
         assertEquals(384, fallbackSprite.width)
         assertEquals(640, fallbackSprite.height)
         fallbackSprite.recycle()
+    }
+
+    @Test
+    fun vrGameplayBooksAndKeysHudIsPositionedLowerInLensViewAndHasNo2dOption() {
+        val engine = GameEngine()
+        engine.startNewGame(GameMap.HOUSE, Difficulty.MEDIUM)
+        composeRule.setContent {
+            SlendrinaGoTheme {
+                GamePlayScreen(
+                    engine = engine,
+                    hud = engine.snapshot(),
+                    settings = PlayerSettings(),
+                    onRecenter = {},
+                    onPauseToggle = {},
+                    onResume = {},
+                    onRestart = {},
+                    onExitToMenu = {}
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        val barNode = composeRule.onNodeWithTag("vr_hud_objectives_bar").assertIsDisplayed()
+        val topPx = barNode.fetchSemanticsNode().boundsInRoot.top
+        assertTrue("VR Books/Keys HUD bar should be lowered from top edge (topPx=$topPx)", topPx >= 50f)
+        composeRule.onNodeWithTag("hud_toggle_render_mode").assertDoesNotExist()
+        composeRule.onNodeWithTag("hud_recenter").assertIsDisplayed()
+        composeRule.onNodeWithTag("hud_pause").assertIsDisplayed()
+    }
+
+    @Test
+    fun vrPauseOverlayIsVrOnlyWithout2dSwitchButton() {
+        val engine = GameEngine()
+        engine.startNewGame(GameMap.HOTEL, Difficulty.HARD)
+        engine.pauseGame()
+        composeRule.setContent {
+            SlendrinaGoTheme {
+                GamePlayScreen(
+                    engine = engine,
+                    hud = engine.snapshot(),
+                    settings = PlayerSettings(),
+                    onRecenter = {},
+                    onPauseToggle = {},
+                    onResume = {},
+                    onRestart = {},
+                    onExitToMenu = {}
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("pause_resume_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("pause_recenter_button").assertIsDisplayed()
+        composeRule.onNodeWithTag("pause_switch_mode_button").assertDoesNotExist()
     }
 }

@@ -5,7 +5,6 @@ import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
 import com.example.data.GameMap
-import com.example.data.RenderMode
 import com.example.data.VrRefreshRate
 import com.example.game.CELL_SIZE
 import com.example.game.CellType
@@ -29,7 +28,6 @@ class HorrorRenderer(
     private val onFrameTick: () -> Unit
 ) : GLSurfaceView.Renderer {
 
-    @Volatile var renderMode: RenderMode = RenderMode.VR_SBS
     @Volatile var refreshRate: VrRefreshRate = VrRefreshRate.HZ_72
 
     private var surfaceWidth = 1
@@ -123,10 +121,7 @@ class HorrorRenderer(
         val dt = ((now - lastNs) / 1_000_000_000.0f).coerceIn(0.001f, 0.05f)
         lastNs = now
 
-        val isVrMenu = engine.phase == com.example.game.GamePhase.MENU
-        val useVrSbs = isVrMenu || renderMode == RenderMode.VR_SBS
-        val bobScale = if (useVrSbs) 0.25f else 1.0f
-        engine.tick(dt, headBobScale = bobScale)
+        engine.tick(dt, headBobScale = 0.25f)
         onFrameTick()
 
         val level = engine.level
@@ -139,34 +134,25 @@ class HorrorRenderer(
         GLES30.glClearColor(map.fogColorR, map.fogColorG, map.fogColorB, 1f)
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT or GLES30.GL_DEPTH_BUFFER_BIT)
 
-        if (useVrSbs) {
-            val halfW = (surfaceWidth / 2).coerceAtLeast(1)
-            val rightW = (surfaceWidth - halfW).coerceAtLeast(1)
-            val aspect = halfW.toFloat() / surfaceHeight.toFloat()
-            val halfIpd = OculusGoDisplayProfile.HALF_IPD_METERS
-            // Left Eye (1280x1440 on Oculus Go 2560x1440 Fast-Switch LCD, IPD 63.5mm)
-            GLES30.glViewport(0, 0, halfW, surfaceHeight)
-            renderEye(
-                vpX = 0f, vpY = 0f, vpW = halfW.toFloat(), vpH = surfaceHeight.toFloat(),
-                aspect = aspect, eyeOffset = -halfIpd, vrMode = true
-            )
-            // Right Eye
-            GLES30.glViewport(halfW, 0, rightW, surfaceHeight)
-            renderEye(
-                vpX = halfW.toFloat(), vpY = 0f, vpW = rightW.toFloat(), vpH = surfaceHeight.toFloat(),
-                aspect = rightW.toFloat() / surfaceHeight.toFloat(), eyeOffset = halfIpd, vrMode = true
-            )
-            // Thin soft-obsidian divider (reduces Fresnel glare vs pure black)
-            GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
-            drawCenterDivider()
-        } else {
-            GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
-            val aspect = surfaceWidth.toFloat() / surfaceHeight.toFloat()
-            renderEye(
-                vpX = 0f, vpY = 0f, vpW = surfaceWidth.toFloat(), vpH = surfaceHeight.toFloat(),
-                aspect = aspect, eyeOffset = 0f, vrMode = false
-            )
-        }
+        val halfW = (surfaceWidth / 2).coerceAtLeast(1)
+        val rightW = (surfaceWidth - halfW).coerceAtLeast(1)
+        val aspect = halfW.toFloat() / surfaceHeight.toFloat()
+        val halfIpd = OculusGoDisplayProfile.HALF_IPD_METERS
+        // Left Eye (1280x1440 on Oculus Go 2560x1440 Fast-Switch LCD, IPD 63.5mm)
+        GLES30.glViewport(0, 0, halfW, surfaceHeight)
+        renderEye(
+            vpX = 0f, vpY = 0f, vpW = halfW.toFloat(), vpH = surfaceHeight.toFloat(),
+            aspect = aspect, eyeOffset = -halfIpd
+        )
+        // Right Eye
+        GLES30.glViewport(halfW, 0, rightW, surfaceHeight)
+        renderEye(
+            vpX = halfW.toFloat(), vpY = 0f, vpW = rightW.toFloat(), vpH = surfaceHeight.toFloat(),
+            aspect = rightW.toFloat() / surfaceHeight.toFloat(), eyeOffset = halfIpd
+        )
+        // Thin soft-obsidian divider (reduces Fresnel glare vs pure black)
+        GLES30.glViewport(0, 0, surfaceWidth, surfaceHeight)
+        drawCenterDivider()
     }
 
     private fun renderEye(
@@ -175,18 +161,13 @@ class HorrorRenderer(
         vpW: Float,
         vpH: Float,
         aspect: Float,
-        eyeOffset: Float,
-        vrMode: Boolean
+        eyeOffset: Float
     ) {
         val texSet = textures ?: return
         val level = engine.level
         val map = level.map
 
-        val fov = if (vrMode) {
-            OculusGoDisplayProfile.calculateVerticalFovDeg(aspect)
-        } else {
-            OculusGoDisplayProfile.FLAT_2D_FOV_DEG
-        }
+        val fov = OculusGoDisplayProfile.calculateVerticalFovDeg(aspect)
         Matrix.perspectiveM(projMatrix, 0, fov, aspect, 0.1f, 55f)
 
         val yaw = engine.totalYawRad
@@ -195,7 +176,7 @@ class HorrorRenderer(
         val shakeX = if (shake > 0f) sin(engine.elapsedTime * 57f) * shake else 0f
         val shakeY = if (shake > 0f) cos(engine.elapsedTime * 63f) * shake else 0f
 
-        val bobY = sin(engine.bobPhase) * 0.045f * (if (vrMode) 0.25f else 1f)
+        val bobY = sin(engine.bobPhase) * 0.045f * 0.25f
         val eyeY = 1.62f + bobY + shakeY
         val rightX = -sin(yaw)
         val rightZ = cos(yaw)
@@ -208,7 +189,7 @@ class HorrorRenderer(
         val lookZ = cos(pitch) * sin(yaw)
 
         // Apply slight roll if 3DoF head tilt is active in VR
-        val roll = if (vrMode) engine.headRollRad else 0f
+        val roll = engine.headRollRad
         val upX = -sin(roll) * rightX
         val upY = cos(roll)
         val upZ = -sin(roll) * rightZ
@@ -229,7 +210,7 @@ class HorrorRenderer(
         GLES30.glUniform1f(uStaticLoc, engine.stareIntensity)
         GLES30.glUniform1f(uDamageTintLoc, ((100f - engine.sanity) / 100f).coerceIn(0f, 1f))
         GLES30.glUniform1f(uTimeLoc, engine.elapsedTime)
-        GLES30.glUniform1f(uVrVigLoc, if (vrMode) 1f else 0f)
+        GLES30.glUniform1f(uVrVigLoc, 1f)
         GLES30.glUniform4f(uEyeViewportLoc, vpX, vpY, vpW, vpH)
         GLES30.glUniform1f(uColorVibrancyLoc, OculusGoDisplayProfile.vibrancyFor(refreshRate))
 

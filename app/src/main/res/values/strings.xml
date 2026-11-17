@@ -2,7 +2,6 @@
     <string name="app_name">Slendrina Go VR</string>
     <string name="subtitle_oculus_go">Oculus Go Gen 1 Edition</string>
     <string name="mode_vr_sbs">VR Headset (SBS)</string>
-    <string name="mode_flat_2d">2D / Oculus TV</string>
     <string name="action_enter_map">Enter Nightmare</string>
     <string name="action_flashlight">Flashlight</string>
     <string name="action_interact">Interact</string>

@@ -32,7 +32,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.data.RenderMode
 import com.example.game.GamePhase
 import com.example.gl.HorrorRenderer
 import com.example.ui.GamePlayScreen
@@ -64,11 +63,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 renderer.refreshRate = settings.refreshRate
-                renderer.renderMode = if (hud.phase == GamePhase.MENU) {
-                    RenderMode.VR_SBS
-                } else {
-                    settings.renderMode
-                }
 
                 LaunchedEffect(settings.refreshRate) {
                     applyPreferredDisplayRefreshRate(settings.refreshRate.hz)
@@ -143,7 +137,6 @@ class MainActivity : ComponentActivity() {
                             settings = settings,
                             gamepadStatus = gamepadStatus,
                             menuActions = viewModel.menuActions,
-                            onToggleRenderMode = viewModel::toggleRenderMode,
                             onRecenter = viewModel::recenterHeadTracking,
                             onPauseToggle = viewModel::togglePause,
                             onResume = viewModel::resumeGame,

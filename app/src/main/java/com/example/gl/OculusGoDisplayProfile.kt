@@ -26,7 +26,6 @@ object OculusGoDisplayProfile {
 
     // Next-Gen Fresnel diagonal Field of View (90° - 100° spec)
     const val DIAGONAL_FOV_DEG = 95f
-    const val FLAT_2D_FOV_DEG = 68f
 
     // Fast-Switch RGB LCD 72 Hz color vibrancy & Fresnel anti-god-ray tone ceiling
     const val COLOR_VIBRANCY_72HZ = 1.07f

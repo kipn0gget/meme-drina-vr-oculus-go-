@@ -14,7 +14,6 @@ import com.example.data.GameMap
 import com.example.data.GamePreferencesRepository
 import com.example.data.GameRecords
 import com.example.data.PlayerSettings
-import com.example.data.RenderMode
 import com.example.data.VrRefreshRate
 import com.example.game.GameEngine
 import com.example.game.GamePhase
@@ -109,15 +108,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.setSelectedDifficulty(difficulty) }
     }
 
-    fun toggleRenderMode() {
-        val next = if (settings.value.renderMode == RenderMode.VR_SBS) RenderMode.FLAT_2D else RenderMode.VR_SBS
-        viewModelScope.launch { repository.setRenderMode(next) }
-    }
-
-    fun setRenderMode(mode: RenderMode) {
-        viewModelScope.launch { repository.setRenderMode(mode) }
-    }
-
     fun toggleRefreshRate() {
         val next = if (settings.value.refreshRate == VrRefreshRate.HZ_72) VrRefreshRate.HZ_60 else VrRefreshRate.HZ_72
         viewModelScope.launch { repository.setRefreshRate(next) }
@@ -135,9 +125,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startSelectedGame() {
         val s = settings.value
-        if (s.renderMode != RenderMode.VR_SBS) {
-            viewModelScope.launch { repository.setRenderMode(RenderMode.VR_SBS) }
-        }
         recordedVictoryForRun = false
         headTracker.recenter()
         audioEngine.start()
@@ -171,9 +158,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun returnToMenu() {
         engine.returnToMenu()
         engine.previewMapInMenu(settings.value.selectedMap)
-        if (settings.value.renderMode != RenderMode.VR_SBS) {
-            viewModelScope.launch { repository.setRenderMode(RenderMode.VR_SBS) }
-        }
         audioEngine.tensionLevel = 0f
         audioEngine.stareLevel = 0f
         audioEngine.stop()

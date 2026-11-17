@@ -87,18 +87,12 @@ enum class Difficulty(
     )
 }
 
-enum class RenderMode(val label: String, val shortLabel: String) {
-    VR_SBS("Oculus Go VR (SBS)", "VR SBS"),
-    FLAT_2D("2D / Oculus TV", "2D FLAT")
-}
-
 enum class VrRefreshRate(val hz: Int, val label: String) {
     HZ_72(72, "72 Hz"),
     HZ_60(60, "60 Hz")
 }
 
 data class PlayerSettings(
-    val renderMode: RenderMode = RenderMode.VR_SBS,
     val refreshRate: VrRefreshRate = VrRefreshRate.HZ_72,
     val headTrackingEnabled: Boolean = true,
     val audioEnabled: Boolean = true,
