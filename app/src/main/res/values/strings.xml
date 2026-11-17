@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Slendrina Go VR</string>
+    <string name="subtitle_oculus_go">Oculus Go Gen 1 Edition</string>
+    <string name="mode_vr_sbs">VR Headset (SBS)</string>
+    <string name="mode_flat_2d">2D / Oculus TV</string>
+    <string name="action_enter_map">Enter Nightmare</string>
+    <string name="action_flashlight">Flashlight</string>
+    <string name="action_interact">Interact</string>
+    <string name="action_recenter">Recenter View</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_restart">Play Again</string>
+    <string name="action_main_menu">Main Menu</string>
+</resources>

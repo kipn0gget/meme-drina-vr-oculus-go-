@@ -1,0 +1,8 @@
+{
+  "name": "Remix Slendrina Go VR",
+  "description": "A first-person 3D survival horror game rebuilt for Oculus Go Gen 1 with stereoscopic SBS VR rendering, 3DoF head tracking, Gear VR/Go controller support, and all three haunted maps unlocked.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
